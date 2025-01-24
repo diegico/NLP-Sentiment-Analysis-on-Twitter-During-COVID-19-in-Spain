@@ -26,6 +26,13 @@ This project analyzes the sentiment expressed by the Spanish population on Twitt
 - Demonstrated appeals to unity and solidarity during critical moments.
 - Identified significant expectations placed on the government and institutions.
 - Showed public emphasis on individual responsibility during the crisis.
+- 
+## Authors
+- **Diego Vicente**
+- **José Antonio Robles**
+- **Esther Ayuso**
+
+This project was completed in May 2024.
 
 ## How to Use
 1. Clone this repository:
