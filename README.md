@@ -30,4 +30,4 @@ This project analyzes the sentiment expressed by the Spanish population on Twitt
 ## How to Use
 1. Clone this repository:
    ```bash
-   git clone https://github.com/your-username/sentiment-analysis-covid19.git
+   git clone (https://github.com/diegico/NLP-Sentiment-Analysis-on-Twitter-During-COVID-19-in-Spain)
