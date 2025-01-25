@@ -1,0 +1,499 @@
+---
+class: animated fadeIn fadeOut
+
+title: "Trabajo final"
+subtitle: "Analisis de sentimientos en Twitter de la población española durante el mes de abril de la pandemia de COVID-19"
+author: "Esther Ayuso <br/> Diego Vicente <br/>  Jose Antonio Robles <br/>"
+institute: "USAL"
+date: "03/06/2024"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      slideNumber: false
+      fullscreen: true         # Habilitar pantalla completa
+      ratio: "16:9" 
+---
+class: animated fadeIn fadeOut
+
+### Introducción 
+
+Pandemia de COVID-19 en España en marzo de 2020.
+
+Twitter como canal clave para expresar opiniones.
+
+Base de datos de Twitter: 24.074 casos.
+Periodo: 29 de marzo - 27 de abril de 2020.
+
+Pregunta de investigación:
+¿Cómo cambiaron los sentimientos durante el confinamiento?
+
+---
+class: animated fadeIn fadeOut
+
+### Contexto Temporal y Relevancia
+
+Fase crítica en España con medidas de confinamiento estrictas.
+
+Periodo clave para observar reacciones de la población.
+
+Influencia del miedo y respuestas gubernamentales.
+
+Impacto significativo en la vida cotidiana y dinámicas sociales.
+
+Confinamiento, sistema de salud sobrecargado.
+
+Ansiedad y estrés generados por la pandemia.
+
+---
+class: animated fadeIn fadeOut
+
+### Objetivos del Análisis
+
+Identificar los sentimientos de la población española  a través de mensajes de Twitter.
+
+Analizar difusión de información  y el uso de hashtag.
+
+Observar cambios en el comportamiento social durante el periodo analizado.
+
+Estudiar los posibles efectos de las restricciones y medidas institucionales sobre los sentimientos de la población.
+
+---
+class: animated fadeIn fadeOut
+
+# Hipótesis y Justificación Académica
+
+Hipótesis 1: La pandemia creó un sentimiento de unión y solidaridad en la sociedad española.
+
+Hipótesis 2: Conforme la situación se agravó, sentimientos como el miedo se hicieron mas notables.
+
+Aportación a la literatura sobre COVID-19 y a la comprensión del fenómeno.
+
+
+###Justificación:
+
+Uso de herramientas para captar emociones y opiniones masivas a través de una metodología replicable para futuras investigaciones..
+
+---
+class: animated fadeIn fadeOut
+
+## Principales paquetes utilizados
+```{r echo= FALSE, warning=FALSE, message=FALSE}
+library(readr)
+library(textdata)
+library(tidytext)
+library(RColorBrewer)
+library(tm)
+library(textplot)
+library(stopwords)
+library(gganimate)
+library(kableExtra)
+
+```
+```{r message=FALSE, warning=FALSE}
+library(tweetCoin)
+
+library(netCoin)
+
+library(tidyverse)
+
+library(syuzhet)
+
+library(wordcloud)
+
+library(ggplot2)
+```
+```{r setup, include=FALSE}
+library(htmltools)
+options(htmltools.dir.version = FALSE)
+```
+
+```{r xaringan-animate-css, echo=FALSE}
+xaringanExtra::use_animate_css()
+```
+```{r xaringan-panelset, echo=FALSE}
+xaringanExtra::use_panelset()
+```
+---
+class: animated fadeIn fadeOut
+
+```{r echo=FALSE,message=FALSE, warning=FALSE}
+# Datos
+covid_twt <- read_csv("covid19-tweets-early-late-april_lang_es_country_ES.csv")
+```
+# Limpieza de datos
+
+.panelset[
+.panel[.panel-name[Datos brutos]
+```{r panel-chunk,echo=FALSE}
+covid_reducido <- sample_n(covid_twt, 6)
+kbl(covid_reducido) %>%
+  kable_paper() %>%
+  scroll_box(width = "100%", height = "400px")
+```
+]
+.panel[.panel-name[Warling]
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+# Leer el archivo CSV que contiene las palabras a excluir
+palabras_filtro <- read_csv("palabras_filtro.csv", 
+                            locale = locale(encoding = "Latin1"))
+excluir <- paste(palabras_filtro$paises, collapse = "|")
+```
+
+```{r warning=FALSE}
+# Filtro para quitar variables irrelevantes
+covid_filtrado <- covid_twt %>% 
+  select(c(screen_name, text, created_at, followers_count, place_full_name)) %>% 
+  rename(author = screen_name,
+         text = text,
+         date = created_at,
+         followers = followers_count,
+         location = place_full_name) %>% 
+  filter(!grepl(excluir, text, ignore.case = TRUE)) %>% 
+  mutate(text = gsub("\n", " ", text)) %>% 
+  distinct(text, .keep_all = TRUE)
+```
+]
+.panel[.panel-name[Post-tratamiento]
+---
+class: animated fadeIn fadeOut
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+covid_reducido <- sample_n(covid_filtrado, 6)
+kbl(covid_reducido) %>%
+  kable_paper() %>%
+  scroll_box(width = "100%", height = "400px")
+```
+]
+]
+
+---
+class: animated fadeIn 
+
+# Análisis de redes
+```{r}
+vacuna <- covid_filtrado %>% 
+  filter(grepl("vacuna", text, ignore.case = TRUE)) 
+
+c <- cotweet(vacuna, "text", min = 2)
+c2 <- netCoin(c, size = "degree", distance = 11.18,
+                     repulsion = 20.8, zoom = .7, color = "community", 
+                     shape = "type", main= "Grafico Network")
+#plot(c2)
+```
+---
+class: animated fadeIn fadeOut
+
+## Análisis específico de redes (Vacunas)
+
+<!-- Aquí incluimos el archivo HTML generado por NetCoin -->
+<iframe src="temp/Red vacunas/index.html" width="900" height="600" frameborder="0"></iframe>
+<!-- Opcionalmente, puedes incluir directamente los archivos CSS y JS si son necesarios para el estilo y funcionalidad -->
+<link rel="stylesheet" type="text/css" href="temp/Red vacunas/styles/estilos.css">
+<script src="temp/Red vacuns/scripts/funciones.js"></script>
+
+---
+class: animated fadeIn fadeOut
+
+## Análisis específico de redes (Mascarillas) 
+<!-- Aquí incluimos el archivo HTML generado por NetCoin -->
+<iframe src="temp/Red mascarilla/index.html" width="900" height="600" frameborder="0"></iframe>
+<!-- Opcionalmente, puedes incluir directamente los archivos CSS y JS si son necesarios para el estilo y funcionalidad -->
+<link rel="stylesheet" type="text/css" href="temp/Red mascarilla/styles/estilos.css">
+<script src="temp/Red mascarilla/scripts/funciones.js"></script>
+
+
+---
+class: animated fadeIn fadeOut
+
+## Análisis específico de redes (Confinamiento)
+<!-- Aquí incluimos el archivo HTML generado por NetCoin -->
+<iframe src="temp/Red confinamiento/index.html" width="900" height="600" frameborder="0"></iframe>
+<!-- Opcionalmente, puedes incluir directamente los archivos CSS y JS si son necesarios para el estilo y funcionalidad -->
+<link rel="stylesheet" type="text/css" href="temp/Red confinamiento/styles/estilos.css">
+<script src="temp/Red confinamiento/scripts/funciones.js"></script>
+
+
+---
+class: animated fadeIn fadeOut
+
+# Análisis de sentimiento
+
+<video width="90%" controls>
+  <source src="prueba_buena.mp4" type="video/mp4">
+  Tu navegador no soporta el elemento de video.
+</video>
+
+---
+class: animated fadeIn fadeOut
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+#Análisis de sentimientos
+stopwords_es <- stopwords("es")
+stopwords_adicionales <- read.csv("stopwords_adicionales.csv", stringsAsFactors = F)$alfabeto
+stopwords_final <- c(stopwords_es, stopwords_adicionales)
+
+# Limpiar el texto
+vacuna_clean <- vacuna %>%
+  mutate(text = str_to_lower(text)) %>%
+  mutate(text = str_replace_all(text, "(#\\w+|@\\w+|https\\S+)\\b", "")) %>% 
+  mutate(text = str_replace_all(text, "[[:punct:]]", "")) %>%
+  mutate(text = str_replace_all(text, "[[:digit:]]", "")) 
+
+# Tokenizar el texto 
+vacuna_tokens <- vacuna_clean %>%
+  unnest_tokens(word, text)
+#filtrar
+vacuna_tokens_filtered <- vacuna_tokens %>%
+  filter(!word %in% stopwords_final)
+
+vacuna_tokens_vector <- c(vacuna_tokens_filtered$word)
+
+```
+
+# Polaridad de los sentimientos
+```{r}
+polaridad <-  get_nrc_sentiment(vacuna_tokens_vector, language = "spanish")
+```
+
+```{r echo=FALSE}
+polaridad_corto <- sample_n(polaridad, 10)
+
+polaridad_corto %>%
+  kbl() %>%
+  kable_styling()
+```
+
+
+---
+class: animated fadeIn fadeOut
+
+```{r echo=FALSE, fig.width=16, fig.height=9}
+# Ajustar los márgenes de la figura
+par(mar = c(5, 5, 4, 2) + 0.1)
+
+# Crear el gráfico de barras
+barplot(
+  colSums(prop.table(polaridad[, 1:8])),
+  space = 0.4,
+  horiz = FALSE,
+  las = 1,
+  cex.names = 1.25,
+  cex.main=3,
+  col = brewer.pal(n = 8, name = "Set3"),
+  main = "Análisis de sentimientos",
+  xlab="Emociones", ylab = "Suma de intensidad de emociones", ylim = c(0, 0.2)
+)
+```
+---
+class: animated fadeIn fadeOut
+
+#Wordcloud
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.width=16}
+# Crear el vector de emociones
+nube_emociones_vector <- c(
+  paste(vacuna_tokens_vector[polaridad$fear > 0], collapse = " "),
+  paste(vacuna_tokens_vector[polaridad$sadness > 0], collapse = " "),
+  paste(vacuna_tokens_vector[polaridad$trust > 0], collapse = " "),
+  paste(vacuna_tokens_vector[polaridad$anticipation > 0], collapse = " ")
+)
+
+# Convertir la codificación
+nube_emociones_vector <- iconv(nube_emociones_vector, "latin1", "UTF-8")
+
+# Crear el corpus
+nube_corpus <- Corpus(VectorSource(nube_emociones_vector))
+
+# Función para eliminar hashtags
+removeHashtags <- content_transformer(function(x, pattern) gsub(pattern, "", x))
+nube_corpus <- tm_map(nube_corpus, removeHashtags, "#\\S+")
+
+# Limpiar el texto
+nube_corpus <- tm_map(nube_corpus, content_transformer(tolower))
+nube_corpus <- tm_map(nube_corpus, removePunctuation)
+nube_corpus <- tm_map(nube_corpus, removeNumbers)
+nube_corpus <- tm_map(nube_corpus, removeWords, stopwords_final)
+nube_corpus <- tm_map(nube_corpus, stripWhitespace)
+
+# Crear la matriz de términos-documentos
+nube_tdm <- TermDocumentMatrix(nube_corpus)
+nube_tdm <- as.matrix(nube_tdm)
+colnames(nube_tdm) <- c('miedo', 'tristeza', 'confianza', 'anticipación')
+
+# Obtener frecuencias de las palabras
+frecuencia_palabras <- rowSums(nube_tdm)
+frecuencia_palabras <- sort(frecuencia_palabras, decreasing = TRUE)
+words <- names(frecuencia_palabras)
+freq <- as.vector(frecuencia_palabras)
+
+# Asignar colores a las emociones
+colors <- rep(NA, length(words))
+colors[nube_tdm[, "miedo"] > 0] <- "green"
+colors[nube_tdm[, "tristeza"] > 0] <- "red"
+colors[nube_tdm[, "confianza"] > 0] <- "orange"
+colors[nube_tdm[, "anticipación"] > 0] <- "blue"
+
+# Generar nube de comparación
+set.seed(600) # puede ser cualquier número
+wordcloud(words = words, freq = freq, min.freq = 1, 
+          colors = colors, random.order = FALSE, 
+          scale = c(2.5, 0.75), max.words = 200)
+
+# Agregar leyenda
+legend("topright", legend = c('miedo', 'tristeza', 'confianza', 'anticipación'), 
+       fill = c("green", "red", "orange", "blue"), title = "Emociones",
+       border = "black",
+       bty = "o",
+       cex = 0.8, x = 1, y = 0.8)
+
+
+```
+---
+class: animated fadeIn fadeOut
+
+#Serie temporal
+
+```{r echo=FALSE, fig.width=16, warning=FALSE}
+fecha <- as.Date(vacuna_tokens_filtered$date)
+tendencia_df <- data.frame(fecha, polaridad)
+tendencia <- tendencia_df %>% 
+  select(fecha, fear, sadness,trust, anticipation)
+
+# Agrupar los datos por fecha y calcular la media de "fear"
+data_agg <- tendencia %>%
+  group_by(fecha) %>%
+  summarise(mean_fear = mean(fear))
+
+# Identificar máximos relativos
+find_local_maxima <- function(x) {
+  return((x > lag(x, default = first(x))) & (x > lead(x, default = last(x))))
+}
+
+data_agg <- data_agg %>%
+  mutate(is_maxima = find_local_maxima(mean_fear))
+
+# Filtrar los puntos que son máximos relativos
+maxima_points <- data_agg %>%
+  filter(is_maxima)
+
+# Crear el gráfico de líneas con anotaciones para los máximos relativos
+ggplot(data_agg, aes(x = fecha, y = mean_fear)) +
+  geom_line() +
+  geom_point(data = maxima_points, aes(x = fecha, y = mean_fear), color = "red", size = 3) +
+  geom_text(data = maxima_points, aes(x = fecha, y = mean_fear, label = fecha), vjust = -1, hjust = 1, color = "blue") +
+  labs(title = "Media de Fear a lo largo del tiempo con Máximos Relativos",
+       x = "Fecha",
+       y = "Media de Fear") +
+  theme_minimal() 
+
+```
+---
+class: animated fadeIn fadeOut
+
+Ej.: “Por todas esas personas que han fallecido sin poderse despedir de sus familiares #maldito #coronavirus #dep #ánimo a todas esas #familias #afectadas y #mucha #fuerza” 
+
+  de @AngelCasero2000
+
+
+Ej.: “Sintiéndolo mucho, esto tambiés es información. No todo es lobotomizar a la sociedad con imágenes felices y/o parodias desde los balcones. En Madrid, la situación es terrible y tenemos que ser conscientes de ello. #coronavirus”
+
+  de @ eRetamar
+
+
+Ej.: “ÚLTIMA HORA #CORONAVIRUS ESPAÑA:
+Se registra, en las últimas 24 horas, un repunte con 757 muertos y 6.180 nuevos contagios.
+Hoy 8 de abril hay un total de 14.555 personas fallecidas y 146.690 contagiados.
+Se adjunta tabla datos por Autonomías https://t.co/EgDBfW08A3” 
+
+  de @benidormlive
+
+---
+class: animated fadeIn fadeOut
+
+#Serie temporal
+
+```{r echo=FALSE, fig.width=16, warning=FALSE}
+fecha <- as.Date(vacuna_tokens_filtered$date)
+tendencia_df <- data.frame(fecha, polaridad)
+tendencia <- tendencia_df %>% 
+  select(fecha, fear, sadness,trust, anticipation)
+
+# Agrupar los datos por fecha y calcular la media de "fear"
+data_agg <- tendencia %>%
+  group_by(fecha) %>%
+  summarise(mean_fear = mean(fear))
+
+# Identificar máximos relativos
+find_local_maxima <- function(x) {
+  return((x > lag(x, default = first(x))) & (x > lead(x, default = last(x))))
+}
+
+data_agg <- data_agg %>%
+  mutate(is_maxima = find_local_maxima(mean_fear))
+
+# Filtrar los puntos que son máximos relativos
+maxima_points <- data_agg %>%
+  filter(is_maxima)
+
+# Crear el gráfico de líneas con anotaciones para los máximos relativos
+ggplot(data_agg, aes(x = fecha, y = mean_fear)) +
+  geom_line() +
+  geom_point(data = maxima_points, aes(x = fecha, y = mean_fear), color = "red", size = 3) +
+  geom_text(data = maxima_points, aes(x = fecha, y = mean_fear, label = fecha), vjust = -1, hjust = 1, color = "blue") +
+  labs(title = "Media de Fear a lo largo del tiempo con Máximos Relativos",
+       x = "Fecha",
+       y = "Media de Fear") +
+  theme_minimal() 
+
+```
+---
+class: animated fadeIn fadeOut
+
+Ej.: “En esta imagen se ve que el 10 de abril bajaron el número de enfermos respecto al día anterior. Hoy 14 de abril también se ha producido una bajada de enfermos reales. Esperemos que esta sea la tendencia en los próximos días.
+ #coronavirus #CoronavirusEspaña #LaMañanaTVE https://t.co/sEC9osydqv”
+
+  de @JoanetMB
+
+
+
+Ej.: “Feliz día del portero, pronto volveremos a volar #somosporteros @bupolsa #COVID19 #YoMeQuedoEnCasa https://t.co/yQy4e4iRly” 
+
+  de @GuillerbegoHot
+  
+---
+class: animated fadeIn fadeOut
+
+#Serie temporal
+
+```{r echo=FALSE, fig.width=16, warning=FALSE, message=FALSE}
+ggplot(tendencia, aes(fecha, fill=fear) ) +
+  labs(title = "Miedo en tweets")+ylab("Grado de miedo") +
+  theme(plot.title = element_text(size = rel(2), colour = "Black"))+
+  geom_bar(position="dodge")
+```
+---
+class: animated fadeIn fadeOut
+
+## Conclusion
+
+Apelación al sentimiento de unidad en momentos críticos.
+
+Gran expectación en el gobierno y las instituciones al mismo tiempo que se apelaba a la responsabilidad individual.
+
+Kruspe, A., Häberle, M., Kuhn, I., & Zhu, X. (2020). Análisis de sentimientos multilingües de mensajes de Twitter en Europa durante la pandemia de COVID-19.  ArXiv, abs/2008.12172.
+
+---
+class: animated fadeIn fadeOut
+
+
+
+_____________________________________________________________________
+
+<div style="text-align: center;">
+  <h1 style="font-size: 36px;">MUCHAS GRACIAS POR SU ATENCIÓN</h1>
+  <p style="font-size: 20px;">FIN</p>
+  <p style="font-size: 20px;">¿ALGUNA PREGUNTA?</p>
+</div>
+
